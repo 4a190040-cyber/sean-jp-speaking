@@ -1,0 +1,546 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-title" content="標日口說"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#1D2740"></head><body>
+<title>標日口說練習</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: 左欄課程勾選、右欄對話練習；窄螢幕上下堆疊。評分以朱印章呈現。 */
+:root{
+  --paper:#F2F4F6; --sheet:#FFFFFF; --ink:#1D2740; --muted:#5E6A80; --line:#D9DEE6;
+  --shu:#C23B2A; --shu-soft:#F7E3DF; --ok:#2F7A55; --ok-soft:#E1F0E7; --me:#E8EDF7;
+  --f-display:"Shippori Mincho","Noto Serif JP","Yu Mincho",serif;
+  --f-body:"Zen Kaku Gothic New","Noto Sans JP","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#12161F; --sheet:#1A202C; --ink:#E6E9F0; --muted:#98A2B6; --line:#2C3445;
+  --shu:#E5604D; --shu-soft:#3A221F; --ok:#5CC08B; --ok-soft:#1C3328; --me:#232C40; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#12161F; --sheet:#1A202C; --ink:#E6E9F0; --muted:#98A2B6; --line:#2C3445;
+  --shu:#E5604D; --shu-soft:#3A221F; --ok:#5CC08B; --ok-soft:#1C3328; --me:#232C40; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+h1{font-family:var(--f-display);font-weight:800;font-size:28px;margin:0;letter-spacing:.04em;text-wrap:balance}
+h1 small{font-size:14px;color:var(--muted);font-family:var(--f-body);font-weight:500;margin-left:8px;letter-spacing:0}
+h2{font-family:var(--f-display);font-size:18px;margin:0}
+.status{font-size:13px;color:var(--muted)}
+.status b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.lessons{display:flex;flex-direction:column;gap:2px;max-height:460px;overflow:auto;margin:0 -6px}
+.lesson{display:grid;grid-template-columns:22px 52px 1fr auto;align-items:center;gap:6px;padding:6px;border-radius:4px;cursor:pointer}
+.lesson:hover{background:var(--me)}
+.lesson input{width:16px;height:16px;accent-color:var(--shu)}
+.lno{font-family:var(--f-display);font-weight:600;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ltitle{font-size:14px;min-width:0}
+.ltitle span{display:block;font-size:12px;color:var(--muted)}
+.best{font-size:12px;font-variant-numeric:tabular-nums;padding:1px 7px;border-radius:10px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.opts{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:14px}
+.opts label{color:var(--muted)}
+select,input[type=range]{font:inherit;color:var(--ink)}
+select{background:var(--sheet);border:1px solid var(--line);border-radius:4px;padding:4px 6px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:4px;padding:7px 12px}
+button:hover{border-color:var(--ink)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--shu);outline-offset:2px}
+button.primary{background:var(--ink);color:var(--sheet);border-color:var(--ink);font-weight:700}
+button.mic{background:var(--shu);color:#fff;border-color:var(--shu);font-weight:700;padding:10px 18px;font-size:16px}
+button.mic.rec{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+@media (prefers-reduced-motion:reduce){button.mic.rec{animation:none}}
+button:disabled{opacity:.45;cursor:default}
+.linkbtn{border:none;background:none;color:var(--muted);padding:0;text-decoration:underline;font-size:13px}
+.notice{font-size:13px;background:var(--shu-soft);color:var(--ink);border-radius:4px;padding:8px 10px}
+.notice.ok{background:var(--ok-soft)}
+/* 對話 */
+.dlg-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.dlg-head .meta{font-size:13px;color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:10px;min-height:160px}
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:92%}
+.msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.who{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;border:1.5px solid var(--ink)}
+.msg.mine .who{background:var(--shu);border-color:var(--shu);color:#fff}
+.bubble{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 12px;min-width:0}
+.msg.mine .bubble{background:var(--me)}
+.msg.current .bubble{border-color:var(--shu);box-shadow:0 0 0 2px var(--shu-soft)}
+.jp{font-size:19px;line-height:2.1;word-break:break-all}
+.jp rt{font-size:10px;color:var(--muted)}
+.zh{font-size:13px;color:var(--muted)}
+.hidden-jp{letter-spacing:.2em;color:var(--muted)}
+.miss{color:var(--shu);text-decoration:underline wavy;text-underline-offset:4px}
+.result{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.stamp{width:72px;height:72px;border:3px solid var(--shu);border-radius:50%;color:var(--shu);display:grid;place-items:center;text-align:center;font-family:var(--f-display);font-weight:800;line-height:1.1;transform:rotate(-8deg);flex:none}
+.stamp b{font-size:24px;display:block}
+.stamp small{font-size:11px}
+.stamp.good{border-color:var(--ok);color:var(--ok)}
+.heard{font-size:14px;min-width:0;flex:1}
+.heard .lbl{color:var(--muted);font-size:12px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px dashed var(--line);padding-top:12px}
+.empty{color:var(--muted);font-size:14px;padding:30px 0;text-align:center}
+textarea{width:100%;min-height:130px;font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:8px}
+details summary{cursor:pointer;font-size:14px;font-weight:700}
+.summary-box{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.summary-box .sline{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding:3px 0}
+.summary-box .sline span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>標日口說練習<small>標準日本語・初級 對話跟讀</small></h1>
+    <div class="status" id="envStatus">檢查環境中…</div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel">
+      <div class="row" style="justify-content:space-between">
+        <h2>課程</h2>
+        <div class="row" style="gap:10px">
+          <button class="linkbtn" id="selAll">全選</button>
+          <button class="linkbtn" id="selNone">清除</button>
+        </div>
+      </div>
+      <div class="lessons" id="lessonList"></div>
+
+      <div class="opts">
+        <label for="role">我扮演</label>
+        <select id="role"><option value="B">B（回答方）</option><option value="A">A（提問方）</option><option value="both">兩個角色都練</option></select>
+        <label for="hint">提示方式</label>
+        <select id="hint"><option value="full">日文＋假名＋中文</option><option value="zh">只看中文（進階）</option></select>
+        <label for="rate">語速</label>
+        <input type="range" id="rate" min="0.6" max="1.2" step="0.1" value="0.9">
+        <label for="pass">通過分數</label>
+        <select id="pass"><option>60</option><option selected>75</option><option>90</option></select>
+      </div>
+      <button class="primary" id="startBtn">開始練習勾選的課</button>
+
+      <details>
+        <summary>加入自己的課文</summary>
+        <p class="zh" style="margin:6px 0">每行一句，格式：<code>A：日文｜中文</code>。漢字可寫成 <code>{漢字|かんじ}</code> 加上讀音。可把課本的會話自己打進來練。</p>
+        <input id="customTitle" placeholder="課名，例如：第13課 會話" style="width:100%;font:inherit;padding:6px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink);margin-bottom:6px">
+        <textarea id="customText" placeholder="A：すみません、{駅|えき}はどこですか。｜不好意思，車站在哪裡？&#10;B：まっすぐ{行|い}ってください。｜請直走。"></textarea>
+        <div class="row" style="margin-top:6px"><button id="addCustom">加入課程</button><span class="zh" id="customMsg"></span></div>
+      </details>
+    </aside>
+
+    <main class="panel" id="stage">
+      <div class="empty" id="emptyState">勾選左邊的課，按「開始練習」。<br>對方的台詞會自動唸出來，輪到你時按紅色按鈕開口說。</div>
+      <div id="practice" hidden>
+        <div class="dlg-head">
+          <h2 id="dlgTitle"></h2>
+          <span class="meta" id="dlgMeta"></span>
+        </div>
+        <div class="chat" id="chat" style="margin-top:12px"></div>
+        <div id="resultBox" style="margin-top:12px"></div>
+        <div class="controls" id="controls"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+// ===== 課程資料（自編會話，對應各課文法重點） =====
+const BUILTIN = [
+ {id:"L01",no:"第1課",title:"自我介紹",grammar:"～は～です／～ではありません",lines:[
+  ["A","はじめまして。{林|りん}です。どうぞよろしくお{願|ねが}いします。","初次見面，我姓林，請多指教。"],
+  ["B","{田中|たなか}です。こちらこそ、よろしくお{願|ねが}いします。","我是田中，我才要請您多指教。"],
+  ["B","{林|りん}さんは{中国人|ちゅうごくじん}ですか。","林先生是中國人嗎？"],
+  ["A","いいえ、{中国人|ちゅうごくじん}ではありません。{台湾人|たいわんじん}です。","不，不是中國人，是台灣人。"],
+  ["B","そうですか。{会社員|かいしゃいん}ですか。","這樣啊。您是公司職員嗎？"],
+  ["A","はい、{会社員|かいしゃいん}です。","是的，我是公司職員。"]]},
+ {id:"L02",no:"第2課",title:"這是什麼",grammar:"これ・それ・あれ／～の～",lines:[
+  ["A","すみません、それは{何|なん}ですか。","不好意思，那是什麼？"],
+  ["B","これですか。{日本語|にほんご}の{辞書|じしょ}です。","這個嗎？是日語辭典。"],
+  ["A","だれの{辞書|じしょ}ですか。","是誰的辭典？"],
+  ["B","{私|わたし}のです。","是我的。"],
+  ["A","あれも{辞書|じしょ}ですか。","那個也是辭典嗎？"],
+  ["B","いいえ、あれは{雑誌|ざっし}です。","不，那是雜誌。"]]},
+ {id:"L03",no:"第3課",title:"問地點",grammar:"ここ・そこ・あそこ／どこ",lines:[
+  ["A","すみません、トイレはどこですか。","不好意思，洗手間在哪裡？"],
+  ["B","あそこです。","在那邊。"],
+  ["A","エレベーターもあそこですか。","電梯也在那邊嗎？"],
+  ["B","いいえ、エレベーターはそこです。","不，電梯在那裡。"],
+  ["A","どうもありがとうございます。","非常謝謝您。"]]},
+ {id:"L04",no:"第4課",title:"有什麼、有誰",grammar:"～に～があります／います",lines:[
+  ["A","{会社|かいしゃ}の{近|ちか}くにコンビニがありますか。","公司附近有便利商店嗎？"],
+  ["B","はい、{駅|えき}の{前|まえ}にあります。","有，在車站前面。"],
+  ["A","{事務所|じむしょ}にだれがいますか。","辦公室裡有誰在？"],
+  ["B","{部長|ぶちょう}がいます。","部長在。"],
+  ["A","{課長|かちょう}もいますか。","課長也在嗎？"],
+  ["B","いいえ、{課長|かちょう}はいません。","不，課長不在。"]]},
+ {id:"L05",no:"第5課",title:"一天的作息",grammar:"～時に～ます／～から～まで",lines:[
+  ["A","{毎朝|まいあさ}{何時|なんじ}に{起|お}きますか。","你每天早上幾點起床？"],
+  ["B","{6時|ろくじ}に{起|お}きます。","六點起床。"],
+  ["A","{早|はや}いですね。{会社|かいしゃ}は{何時|なんじ}からですか。","真早呢。公司幾點開始上班？"],
+  ["B","{8時|はちじ}からです。{5時|ごじ}まで{働|はたら}きます。","八點開始，工作到五點。"],
+  ["A","{夜|よる}は{何時|なんじ}に{寝|ね}ますか。","晚上幾點睡？"],
+  ["B","{11時|じゅういちじ}に{寝|ね}ます。","十一點睡。"]]},
+ {id:"L06",no:"第6課",title:"週末去哪裡",grammar:"～へ行きます／～で／～と",lines:[
+  ["A","{週末|しゅうまつ}、どこへ{行|い}きますか。","週末要去哪裡？"],
+  ["B","{台中|たいちゅう}へ{行|い}きます。","去台中。"],
+  ["A","{何|なに}で{行|い}きますか。","搭什麼去？"],
+  ["B","{新幹線|しんかんせん}で{行|い}きます。","搭高鐵去。"],
+  ["A","だれと{行|い}きますか。","跟誰去？"],
+  ["B","{家族|かぞく}と{行|い}きます。","跟家人去。"]]},
+ {id:"L07",no:"第7課",title:"早餐吃了什麼",grammar:"～を～ます／～ました",lines:[
+  ["A","{朝|あさ}ごはんを{食|た}べましたか。","吃早餐了嗎？"],
+  ["B","はい、パンを{食|た}べました。","吃了，吃了麵包。"],
+  ["A","{何|なに}を{飲|の}みましたか。","喝了什麼？"],
+  ["B","コーヒーを{飲|の}みました。","喝了咖啡。"],
+  ["A","{昼|ひる}ごはんはいっしょに{食|た}べませんか。","午餐要不要一起吃？"],
+  ["B","いいですね。{食|た}べましょう。","好啊，一起吃吧。"]]},
+ {id:"L08",no:"第8課",title:"送禮物",grammar:"～に～をあげます／～で（工具）",lines:[
+  ["A","それは{何|なん}ですか。","那是什麼？"],
+  ["B","{母|はは}の{誕生日|たんじょうび}のプレゼントです。","是送媽媽的生日禮物。"],
+  ["A","{何|なに}をあげますか。","要送什麼？"],
+  ["B","スカーフをあげます。","送圍巾。"],
+  ["A","{日本語|にほんご}でカードを{書|か}きますか。","要用日文寫卡片嗎？"],
+  ["B","いいえ、{中国語|ちゅうごくご}で{書|か}きます。","不，用中文寫。"]]},
+ {id:"L09",no:"第9課",title:"天氣與料理",grammar:"い形容詞（～くない／～かった）",lines:[
+  ["A","{台湾|たいわん}の{夏|なつ}は{暑|あつ}いですか。","台灣的夏天熱嗎？"],
+  ["B","はい、とても{暑|あつ}いです。","是的，非常熱。"],
+  ["A","{冬|ふゆ}は{寒|さむ}いですか。","冬天冷嗎？"],
+  ["B","いいえ、あまり{寒|さむ}くないです。","不，不太冷。"],
+  ["A","{昨日|きのう}の{料理|りょうり}はおいしかったですね。","昨天的菜很好吃呢。"],
+  ["B","ええ、でも{少|すこ}し{辛|から}かったです。","嗯，不過有點辣。"]]},
+ {id:"L10",no:"第10課",title:"介紹城市",grammar:"な形容詞（～な＋名詞）",lines:[
+  ["A","{台中|たいちゅう}はどんな{町|まち}ですか。","台中是什麼樣的城市？"],
+  ["B","きれいで{静|しず}かな{町|まち}です。","是漂亮又安靜的城市。"],
+  ["A","{有名|ゆうめい}な{食|た}べ{物|もの}は{何|なん}ですか。","有名的食物是什麼？"],
+  ["B","タピオカミルクティーが{有名|ゆうめい}です。","珍珠奶茶很有名。"],
+  ["A","{交通|こうつう}は{便利|べんり}ですか。","交通方便嗎？"],
+  ["B","ええ、とても{便利|べんり}です。","嗯，非常方便。"]]},
+ {id:"L11",no:"第11課",title:"喜好與擅長",grammar:"～が好きです／上手です／わかります",lines:[
+  ["A","どんなスポーツが{好|す}きですか。","喜歡什麼運動？"],
+  ["B","{野球|やきゅう}が{好|す}きです。","喜歡棒球。"],
+  ["A","{歌|うた}は{上手|じょうず}ですか。","唱歌拿手嗎？"],
+  ["B","いいえ、{歌|うた}はあまり{上手|じょうず}ではありません。","不，唱歌不太拿手。"],
+  ["A","{英語|えいご}がわかりますか。","懂英語嗎？"],
+  ["B","{少|すこ}しわかります。","懂一點。"]]},
+ {id:"L12",no:"第12課",title:"比較",grammar:"～と～と、どちらが／～のほうが／いちばん",lines:[
+  ["A","{東京|とうきょう}と{大阪|おおさか}と、どちらが{大|おお}きいですか。","東京和大阪，哪個比較大？"],
+  ["B","{東京|とうきょう}のほうが{大|おお}きいです。","東京比較大。"],
+  ["A","{電車|でんしゃ}とバスと、どちらが{速|はや}いですか。","電車和公車，哪個比較快？"],
+  ["B","{電車|でんしゃ}のほうが{速|はや}いです。","電車比較快。"],
+  ["A","{季節|きせつ}の{中|なか}で、いつがいちばん{好|す}きですか。","季節當中，最喜歡哪個？"],
+  ["B","{秋|あき}がいちばん{好|す}きです。","最喜歡秋天。"]]},
+ {id:"L13",no:"第13課",title:"買東西",grammar:"數量詞（～つ・～枚・～円）",lines:[
+  ["A","いらっしゃいませ。","歡迎光臨。"],
+  ["B","りんごを{3|みっ}つください。","請給我三個蘋果。"],
+  ["A","はい。{全部|ぜんぶ}で{300円|さんびゃくえん}です。","好的，總共三百日圓。"],
+  ["B","それから、{切手|きって}を{2枚|にまい}ください。","還有，請給我兩張郵票。"],
+  ["A","はい、どうぞ。","好的，請收下。"]]},
+ {id:"L14",no:"第14課",title:"昨天做了什麼",grammar:"動詞て形（～て、～ました／～てください）",lines:[
+  ["A","{昨日|きのう}{何|なに}をしましたか。","昨天做了什麼？"],
+  ["B","デパートへ{行|い}って、{買|か}い{物|もの}をしました。","去百貨公司買了東西。"],
+  ["A","それから？","然後呢？"],
+  ["B","{友達|ともだち}に{会|あ}って、{晩|ばん}ごはんを{食|た}べました。","跟朋友見面，吃了晚餐。"],
+  ["A","いいですね。{写真|しゃしん}を{見|み}せてください。","真好。請給我看照片。"]]},
+ {id:"L15",no:"第15課",title:"現在在做什麼",grammar:"～ています（進行）",lines:[
+  ["A","もしもし、{今|いま}{何|なに}をしていますか。","喂，現在在做什麼？"],
+  ["B","{家|いえ}でテレビを{見|み}ています。","在家看電視。"],
+  ["A","{田中|たなか}さんは？","田中先生呢？"],
+  ["B","{部屋|へや}で{寝|ね}ています。","在房間睡覺。"],
+  ["A","そうですか。じゃ、また{電話|でんわ}します。","這樣啊，那我再打電話。"]]},
+ {id:"L16",no:"第16課",title:"評論飯店",grammar:"形容詞て形（～くて／～で）",lines:[
+  ["A","{新|あたら}しいホテルはどうですか。","新的飯店怎麼樣？"],
+  ["B","{部屋|へや}が{広|ひろ}くて{明|あか}るいです。","房間又寬敞又明亮。"],
+  ["A","{駅|えき}から{近|ちか}いですか。","離車站近嗎？"],
+  ["B","はい、{近|ちか}くて{便利|べんり}です。","是的，又近又方便。"],
+  ["A","{値段|ねだん}はどうですか。","價錢怎麼樣？"],
+  ["B","{安|やす}くて、いいですよ。","又便宜又好喔。"]]}
+];
+
+// ===== 儲存（失敗也能正常運作） =====
+const store = {
+  get(k,d){try{const v=localStorage.getItem("jpsp_"+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("jpsp_"+k,JSON.stringify(v))}catch(e){}}
+};
+let custom = store.get("custom",[]);
+let best = store.get("best",{});
+let checked = new Set(store.get("checked",["L01","L02","L03"]));
+const allLessons = () => BUILTIN.concat(custom);
+
+// ===== 文字工具 =====
+const RUBY = /\{([^|}]+)\|([^}]*)\}/g;
+const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const surface = t => t.replace(RUBY,"$1");
+const reading = t => t.replace(RUBY,(m,a,b)=>b||a);
+const rubyHtml = t => { let out="",last=0; t.replace(RUBY,(m,a,b,i)=>{out+=esc(t.slice(last,i))+(b?`<ruby>${esc(a)}<rt>${esc(b)}</rt></ruby>`:esc(a));last=i+m.length;}); return out+esc(t.slice(last)); };
+const KNUM = {"一":"1","二":"2","三":"3","四":"4","五":"5","六":"6","七":"7","八":"8","九":"9","〇":"0","零":"0"};
+const DROP = /[\s、。，．,.!?！？「」『』…ー〜~・：:；;（）()]/;
+function normChar(c){
+  if(DROP.test(c)) return "";
+  const code=c.charCodeAt(0);
+  if(code>=0x30A1&&code<=0x30F6) return String.fromCharCode(code-0x60); // カタカナ→ひらがな
+  if(code>=0xFF10&&code<=0xFF19) return String.fromCharCode(code-0xFEE0); // 全形數字
+  if(code>=0xFF21&&code<=0xFF5A) return String.fromCharCode(code-0xFEE0).toLowerCase();
+  if(KNUM[c]) return KNUM[c];
+  return c.toLowerCase();
+}
+const norm = s => [...s].map(normChar).join("");
+function lcsMatch(a,b){ // a=目標字元陣列, b=辨識結果字串；回傳 a 中被對到的索引
+  const n=a.length,m=b.length,dp=Array.from({length:n+1},()=>new Uint16Array(m+1));
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  const hit=new Set();let i=n,j=m;
+  while(i>0&&j>0){if(a[i-1]===b[j-1]){hit.add(i-1);i--;j--}else if(dp[i-1][j]>=dp[i][j-1])i--;else j--}
+  return {len:dp[n][m],hit};
+}
+function scoreAgainst(target,heard){
+  const chars=[...target].map(c=>({c,n:normChar(c)}));
+  const tArr=[],tIdx=[];chars.forEach((o,k)=>{if(o.n){[...o.n].forEach(x=>{tArr.push(x);tIdx.push(k)})}});
+  const h=norm(heard);
+  if(!tArr.length) return {score:0,html:esc(target)};
+  const {len,hit}=lcsMatch(tArr,h);
+  const score=Math.round(200*len/(tArr.length+h.length||1));
+  const missK=new Set();tArr.forEach((_,i)=>{if(!hit.has(i))missK.add(tIdx[i])});
+  const html=chars.map((o,k)=>missK.has(k)?`<span class="miss">${esc(o.c)}</span>`:esc(o.c)).join("");
+  return {score,html};
+}
+function evaluate(line,alts){
+  let bestR={score:-1};
+  for(const heard of alts){
+    for(const t of [surface(line), reading(line)]){
+      const r=scoreAgainst(t,heard); if(r.score>bestR.score) bestR={...r,heard};
+    }
+  }
+  return bestR;
+}
+
+// ===== 語音：合成 =====
+let jaVoice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang));
+  jaVoice=vs.find(v=>/Google|Kyoko|Nanami|Haruka|Ayumi|Otoya/i.test(v.name))||vs[0]||null;
+  updateEnv();
+}
+function speak(text){
+  return new Promise(res=>{
+    if(!("speechSynthesis" in window)){res();return}
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(reading(text).replace(/\s/g,""));
+    u.text=surface(text); u.lang="ja-JP"; if(jaVoice)u.voice=jaVoice;
+    u.rate=+document.getElementById("rate").value;
+    u.onend=res;u.onerror=res;
+    speechSynthesis.speak(u);
+    setTimeout(res,15000);
+  });
+}
+
+// ===== 語音：辨識 =====
+const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+let micMode = SR ? "auto" : "self"; // auto=語音評分, self=自評
+let micNote="";
+function updateEnv(){
+  const el=document.getElementById("envStatus");
+  const v = jaVoice?`示範語音：<b>${esc(jaVoice.name)}</b>`:"<b>找不到日文語音</b>（示範可能是英文腔）";
+  const m = micMode==="auto"?"語音評分：<b>可用</b>":"語音評分：<b>不可用，改為自評</b>";
+  el.innerHTML=v+"　|　"+m;
+}
+function listen(){
+  return new Promise((resolve,reject)=>{
+    const r=new SR(); r.lang="ja-JP"; r.interimResults=true; r.maxAlternatives=3; r.continuous=false;
+    let finals=[],interim="";
+    r.onresult=e=>{
+      interim="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const res=e.results[i];
+        if(res.isFinal){finals=[...res].map(a=>a.transcript)}else interim+=res[0].transcript;
+      }
+      const box=document.getElementById("liveHeard"); if(box) box.textContent=finals[0]||interim;
+    };
+    r.onerror=e=>reject(e.error);
+    r.onend=()=>resolve(finals.length?finals:(interim?[interim]:[]));
+    try{r.start()}catch(e){reject("start")}
+    curRec=r;
+  });
+}
+let curRec=null;
+
+// ===== 課程列表 =====
+function renderLessons(){
+  const box=document.getElementById("lessonList");
+  box.innerHTML=allLessons().map(l=>`
+    <label class="lesson">
+      <input type="checkbox" data-id="${l.id}" ${checked.has(l.id)?"checked":""}>
+      <span class="lno">${esc(l.no)}</span>
+      <span class="ltitle">${esc(l.title)}<span>${esc(l.grammar||"自訂課文")}</span></span>
+      ${best[l.id]!=null?`<span class="best">最佳 ${best[l.id]}</span>`:"<span></span>"}
+    </label>`).join("");
+  box.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{cb.checked?checked.add(cb.dataset.id):checked.delete(cb.dataset.id);store.set("checked",[...checked])});
+}
+document.getElementById("selAll").onclick=()=>{allLessons().forEach(l=>checked.add(l.id));store.set("checked",[...checked]);renderLessons()};
+document.getElementById("selNone").onclick=()=>{checked.clear();store.set("checked",[]);renderLessons()};
+
+document.getElementById("addCustom").onclick=()=>{
+  const title=document.getElementById("customTitle").value.trim()||"自訂課文";
+  const lines=document.getElementById("customText").value.split(/\n/).map(s=>s.trim()).filter(Boolean).map(s=>{
+    const m=s.match(/^([AB])\s*[：:]\s*(.+)$/i); if(!m) return null;
+    const [jp,zh=""]=m[2].split(/[｜|]/).map(x=>x.trim());
+    return [m[1].toUpperCase(),jp,zh];
+  }).filter(Boolean);
+  const msg=document.getElementById("customMsg");
+  if(lines.length<2){msg.textContent="至少要兩行，每行以 A： 或 B： 開頭。";return}
+  const id="C"+Date.now();
+  custom.push({id,no:"自訂",title,grammar:"",lines});store.set("custom",custom);
+  checked.add(id);store.set("checked",[...checked]);
+  document.getElementById("customText").value="";document.getElementById("customTitle").value="";
+  msg.textContent=`已加入「${title}」，共 ${lines.length} 句。`;
+  renderLessons();
+};
+
+// ===== 練習流程 =====
+let queue=[],qi=0,li=0,myRoles=[],scores=[],sessionLog=[],lastResult=null;
+document.getElementById("startBtn").onclick=()=>{
+  const sel=allLessons().filter(l=>checked.has(l.id));
+  if(!sel.length){alertBox("請先勾選至少一課。");return}
+  const role=document.getElementById("role").value;
+  queue=[];
+  sel.forEach(l=>{ (role==="both"?["B","A"]:[role]).forEach(r=>queue.push({lesson:l,role:r})) });
+  qi=0;sessionLog=[];startDialog();
+};
+function alertBox(t){
+  document.getElementById("emptyState").hidden=false;document.getElementById("practice").hidden=true;
+  document.getElementById("emptyState").innerHTML=`<div class="notice">${esc(t)}</div>`;
+}
+function startDialog(){
+  li=0;scores=[];lastResult=null;
+  document.getElementById("emptyState").hidden=true;document.getElementById("practice").hidden=false;
+  const {lesson,role}=queue[qi];
+  document.getElementById("dlgTitle").textContent=`${lesson.no}　${lesson.title}`;
+  document.getElementById("dlgMeta").textContent=`我扮演 ${role}　・　第 ${qi+1}／${queue.length} 段`;
+  document.getElementById("chat").innerHTML="";
+  step();
+}
+function addBubble(line,mine,reveal){
+  const hint=document.getElementById("hint").value;
+  const div=document.createElement("div");
+  div.className="msg"+(mine?" mine":"");
+  const showJp = !mine || reveal || hint==="full";
+  div.innerHTML=`<div class="who">${line[0]}</div><div class="bubble">
+    <div class="jp">${showJp?rubyHtml(line[1]):'<span class="hidden-jp">？？？</span>'}</div>
+    <div class="zh">${esc(line[2]||"")}</div></div>`;
+  document.getElementById("chat").appendChild(div);
+  div.scrollIntoView({block:"nearest",behavior:"smooth"});
+  return div;
+}
+async function step(){
+  const {lesson,role}=queue[qi];
+  document.getElementById("resultBox").innerHTML="";
+  document.querySelectorAll(".msg.current").forEach(e=>e.classList.remove("current"));
+  if(li>=lesson.lines.length){finishDialog();return}
+  const line=lesson.lines[li];
+  if(line[0]!==role){
+    const b=addBubble(line,false,true);b.classList.add("current");
+    setControls([["⏸ 播放中…",null,true]]);
+    await speak(line[1]);
+    li++;step();
+  }else{
+    const b=addBubble(line,true,false);b.classList.add("current");b.id="myCur";
+    myTurnControls();
+  }
+}
+function myTurnControls(){
+  const line=queue[qi].lesson.lines[li];
+  const btns=[];
+  if(micMode==="auto") btns.push(["🎤 開口說","rec","mic"]);
+  else btns.push(["✓ 我說對了","selfOk","primary"],["↻ 再練一次","selfRetry",""]);
+  btns.push(["🔊 聽示範","demo",""]);
+  if(document.getElementById("hint").value==="zh") btns.push(["顯示日文","reveal",""]);
+  btns.push(["跳過","skip",""]);
+  setControls(btns);
+  if(micMode==="self"){
+    document.getElementById("resultBox").innerHTML=`<div class="notice">${micNote||"此環境無法使用麥克風評分。"}請先按「聽示範」，再大聲跟著說，自己判斷說得對不對。</div>`;
+  }
+}
+function setControls(list){
+  const c=document.getElementById("controls");c.innerHTML="";
+  list.forEach(([label,act,cls])=>{
+    const b=document.createElement("button");b.textContent=label;
+    if(cls===true){b.disabled=true}else if(cls)b.className=cls;
+    if(act)b.onclick=()=>actions[act](b);
+    c.appendChild(b);
+  });
+}
+function revealMine(){
+  const line=queue[qi].lesson.lines[li];
+  const cur=document.getElementById("myCur");
+  if(cur) cur.querySelector(".jp").innerHTML=rubyHtml(line[1]);
+}
+const actions={
+  async demo(){await speak(queue[qi].lesson.lines[li][1])},
+  reveal(){revealMine()},
+  skip(){revealMine();record(0,"（跳過）");next()},
+  selfOk(){revealMine();record(100,"自評");next()},
+  selfRetry(){speak(queue[qi].lesson.lines[li][1])},
+  async rec(btn){
+    if(curRec){try{curRec.stop()}catch(e){};return}
+    speechSynthesis&&speechSynthesis.cancel();
+    btn.classList.add("rec");btn.textContent="■ 說完按我停止";
+    document.getElementById("resultBox").innerHTML=`<div class="heard"><div class="lbl">聽到：</div><div id="liveHeard" class="jp" style="font-size:16px">…</div></div>`;
+    let alts=[];
+    try{alts=await listen()}
+    catch(err){
+      curRec=null;
+      if(err==="not-allowed"||err==="service-not-allowed"||err==="network"||err==="start"||err==="audio-capture"){
+        micMode="self";
+        micNote = err==="network" ? "語音辨識連不上伺服器（Chrome 需連得到 Google；在中國大陸可改用 Edge 試試）。"
+               : err==="audio-capture" ? "找不到麥克風。" : "麥克風權限被拒絕或此頁面不允許使用麥克風。";
+        updateEnv();myTurnControls();return;
+      }
+      if(err==="no-speech"){document.getElementById("resultBox").innerHTML=`<div class="notice">沒聽到聲音，靠近麥克風再試一次。</div>`;myTurnControls();return}
+      document.getElementById("resultBox").innerHTML=`<div class="notice">辨識出錯（${esc(String(err))}），再試一次。</div>`;myTurnControls();return;
+    }
+    curRec=null;
+    if(!alts.length){document.getElementById("resultBox").innerHTML=`<div class="notice">沒聽清楚，再說一次。</div>`;myTurnControls();return}
+    showResult(evaluate(queue[qi].lesson.lines[li][1],alts));
+  },
+  retry(){lastResult=null;myTurnControls();document.getElementById("resultBox").innerHTML=""},
+  accept(){revealMine();record(lastResult.score,lastResult.heard);next()},
+};
+function showResult(r){
+  lastResult=r;
+  const pass=+document.getElementById("pass").value;
+  const good=r.score>=pass;
+  const label=r.score>=90?"よくできました":r.score>=pass?"合格":"もう一度";
+  const mark=r.score>=90?"◎":r.score>=pass?"○":"△";
+  document.getElementById("resultBox").innerHTML=`<div class="result">
+    <div class="stamp ${good?"good":""}"><div><b>${mark}</b>${r.score}分<br><small>${label}</small></div></div>
+    <div class="heard"><div class="lbl">你說的：</div><div>${esc(r.heard)}</div>
+    <div class="lbl" style="margin-top:6px">目標（紅色波浪線＝沒對上的部分）：</div><div class="jp" style="font-size:17px;line-height:1.8">${r.html}</div></div></div>`;
+  revealMine();
+  setControls(good?[["下一句 →","accept","primary"],["↻ 再說一次","retry",""],["🔊 聽示範","demo",""]]
+                  :[["↻ 再說一次","retry","mic"],["🔊 聽示範","demo",""],["算了，下一句","accept",""]]);
+}
+function record(score,heard){scores.push(score);sessionLog.push({line:queue[qi].lesson.lines[li],score})}
+function next(){li++;step()}
+function finishDialog(){
+  const {lesson}=queue[qi];
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  if(best[lesson.id]==null||avg>best[lesson.id]){best[lesson.id]=avg;store.set("best",best);renderLessons()}
+  const more=qi+1<queue.length;
+  document.getElementById("resultBox").innerHTML=`<div class="notice ok">這段完成，平均 <b>${avg}</b> 分。${more?"":"勾選的課全部練完了！"}</div>`;
+  setControls(more?[["下一段 →","nextDlg","primary"],["↻ 這段重練","again",""]]:[["↻ 這段重練","again",""],["看總結","summary","primary"]]);
+}
+actions.nextDlg=()=>{qi++;startDialog()};
+actions.again=()=>startDialog();
+actions.summary=()=>{
+  const weak=sessionLog.filter(x=>x.score<+document.getElementById("pass").value);
+  document.getElementById("chat").innerHTML="";
+  document.getElementById("dlgTitle").textContent="本次總結";
+  document.getElementById("dlgMeta").textContent=`共 ${sessionLog.length} 句`;
+  document.getElementById("resultBox").innerHTML=`<div class="summary-box">
+    <div><b>需要再練的句子（${weak.length}）</b></div>
+    ${weak.length?weak.map(x=>`<div class="sline"><span class="jp" style="font-size:16px;line-height:1.9">${rubyHtml(x.line[1])}</span><span>${x.score} 分</span></div>`).join(""):'<div class="zh">全部通過，很棒！</div>'}
+  </div>`;
+  setControls([["回到課程選擇","home","primary"]]);
+};
+actions.home=()=>{document.getElementById("practice").hidden=true;const e=document.getElementById("emptyState");e.hidden=false;e.innerHTML="勾選左邊的課，按「開始練習」。"};
+
+renderLessons();updateEnv();
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+</script>
+
+</body></html>
